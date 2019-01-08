@@ -1,4 +1,4 @@
-# Organization Issues Back End
+# Iruka Back End
 
 ## Table of Contents
   * [App Design](#app-design)
@@ -67,6 +67,8 @@ list all data models your app will need
 
 * Organization
     * Users
+
+
 
 
   [Back to top ^](#)
