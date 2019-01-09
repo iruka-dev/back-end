@@ -43,6 +43,7 @@
     "MVC"
   ],
   "dependencies": {
+    "@octokit/rest": "false16.7.0",
     "body-parser": "1.18.2",
     "cors": "2.8.4",
     "debug": "^2.4.5",
