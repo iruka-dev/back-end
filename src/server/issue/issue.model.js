@@ -7,6 +7,10 @@ const issueSchema = new Schema({
     type: String,
     required: true,
   },
+  lanuage: [{
+    type: String,
+    required: true,
+  }],
   labels: [{
     type: String
   }],
