@@ -7,7 +7,7 @@ const issueSchema = new Schema({
     type: String,
     required: true,
   },
-  lanuage: [{
+  language: [{
     type: String,
     required: true,
   }],
