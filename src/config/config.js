@@ -20,7 +20,13 @@ const envVarsSchema = Joi.object({
   MONGO_HOST: Joi.string()
     .required()
     .description('Mongo DB host url'),
-  MONGO_PORT: Joi.number().default(27017)
+  MONGO_PORT: Joi.number().default(27017),
+  GITHUB_CLIENT_ID: Joi.string()
+    .required()
+    .description('GitHub OAuth Client ID'),
+  GITHUB_CLIENT_SECRET: Joi.string()
+    .required()
+    .description('Github Oauth Client Secret'),
 })
   .unknown()
   .required();
@@ -38,6 +44,10 @@ const config = {
   mongo: {
     host: envVars.MONGO_HOST,
     port: envVars.MONGO_PORT
+  },
+  github: {
+    id: envVars.GITHUB_CLIENT_ID,
+    secret: envVars.GITHUB_CLIENT_SECRET
   }
 };
 
