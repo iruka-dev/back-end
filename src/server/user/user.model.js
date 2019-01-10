@@ -12,8 +12,8 @@ const userSchema = new Schema({
     ref: 'Issue',
   }],
   organization: {
-    type: Schema.Types.ObjectId,
-    ref: 'Organization'
+    type: String,
+    required: true,
   },
 });
 
