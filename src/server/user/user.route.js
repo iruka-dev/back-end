@@ -1,5 +1,5 @@
 const express = require('express');
-const octokit = require('@octokit/rest');
+const octokit = require('@octokit/rest')();
 
 
 const User = require('./user.model');
@@ -101,3 +101,5 @@ router.get('/', (req, res) => {
       res.status(400);
     });
 });
+
+module.exports = router;
