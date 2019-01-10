@@ -1,22 +1,32 @@
 const express = require('express');
 const octokit = require('@octokit/rest')();
+const mongoose = require('mongoose');
+
+const config = require('../../config/config');
 
 
 const User = require('./user.model');
-const Organization = require('../organization/organization.model');
 const Issue = require('../issue/issue.model');
 
 
 const router = express.Router(); // eslint-disable-line new-cap
 
+octokit.authenticate({
+  type: 'oauth',
+  key: config.github.id,
+  secret: config.github.secret,
+});
+
 router.route('/users');
 
 // POST: Update all of the users in the database
 router.post('/', (req, res) => {
+  // Remove existing data
+  mongoose.connection.db.dropDatabase();
   // Get request for all stargazers of Ikura repo
   const getStargazers = octokit.activity.listStargazersForRepo.endpoint.merge({
-    owner: 'ikura-dev',
-    repo: 'ikura'
+    owner: 'iruka-dev',
+    repo: 'iruka',
   });
 
   // Paginates, returning all stargazers instead of a page
@@ -26,34 +36,30 @@ router.post('/', (req, res) => {
       stargazers.forEach((stargazer) => {
         const username = stargazer.login;
         octokit.users.getByUsername({
-          username
+          username,
         })
-          .then((user) => {
-            let organizationName = user.company;
+          .then((data) => {
+            let organizationName = data.data.company.toLowerCase().replace(/\s/g, '');
+            if (!organizationName) { return; }
             // Remove @ from beginning of string if present
             if (organizationName.charAt(0) === '@') {
               organizationName = organizationName.substr(1);
             }
             const newUser = new User({
               username,
-              issues: []
+              issues: [],
+              organization: organizationName,
             });
 
-            Organization.find({
-              name: organizationName
-            })
-              .then((org) => {
-                newUser.organization = org.id;
-              }).catch(err => console.error(err));
-
-            const getRepos = octokit.repos.listForUser({
+            const getRepos = octokit.repos.listForUser.endpoint.merge({
               username
             });
+
 
             octokit.paginate(getRepos)
               .then((repos) => {
                 repos.forEach((repo) => {
-                  const getIssues = octokit.issues.listForRepo({
+                  const getIssues = octokit.issues.listForRepo.endpoint.merge({
                     owner: username,
                     repo: repo.name,
                   });
@@ -61,16 +67,17 @@ router.post('/', (req, res) => {
                   octokit.repos.listLanguages({
                     owner: username,
                     repo: repo.name
-                  }).then(result =>
-                    Object.keys(result)
-                  ).then((languages) => {
+                  }).then((result) => {
+                    const languageObj = result.data;
+                    return Object.keys(languageObj);
+                  }).then((languages) => {
                     octokit.paginate(getIssues)
                       .then((issues) => {
                         issues.forEach((issue) => {
-                          const labeles = issue.labels.map(a => a.name);
+                          const labels = issue.labels.map(a => a.name);
                           const newIssue = new Issue({
                             title: issue.title,
-                            lables: labeles,
+                            labels,
                             link: issue.html_url,
                             language: languages,
                           });
@@ -87,6 +94,7 @@ router.post('/', (req, res) => {
               }).catch(err => console.error(err));
           }).catch(err => console.error(err));
       });
+      console.log('Refetched user data');
       res.status(200).send();
     }).catch(err => console.error(err));
 });
