@@ -12,7 +12,9 @@ router.get('/:organization', (req, res) => {
   if (organization.charAt(0) === '@') {
     organization = organization.substr(1);
   }
-  const issues = [];
+
+  console.log('Searching for users in:', organization);
+  let issues = [];
   User.find({
     organization,
   })
@@ -20,9 +22,15 @@ router.get('/:organization', (req, res) => {
     .then((users) => {
       if (users) {
         users.forEach((user) => {
-          issues.concat(user.issues);
+          console.log('user:', user.username);
+          issues = issues.concat(user.issues);
         });
+        res.status(200).json(issues);
       }
-    }).catch(err => console.error(err));
-  res.status(200).json(issues);
+    }).catch((err) => {
+      console.error(err);
+      res.status(400);
+    });
 });
+
+module.exports = router;
