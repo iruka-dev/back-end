@@ -39,8 +39,9 @@ router.post('/', (req, res) => {
           username,
         })
           .then((data) => {
-            let organizationName = data.data.company.toLowerCase().replace(/\s/g, '');
+            let organizationName = data.data.company;
             if (!organizationName) { return; }
+            organizationName = organizationName.toLowerCase().replace(/\s/g, '');
             // Remove @ from beginning of string if present
             if (organizationName.charAt(0) === '@') {
               organizationName = organizationName.substr(1);
@@ -88,7 +89,7 @@ router.post('/', (req, res) => {
                               newUser.issues.unshift(savedIssue);
                             }).catch(err => console.error(err));
                         });
-                        newUser.save();
+                        newUser.save().catch(err => console.error(err));
                       }).catch(err => console.error(err));
                   }).catch(err => console.error(err));
                 });
