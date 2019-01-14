@@ -59,6 +59,7 @@ router.post('/', (req, res) => {
             octokit.paginate(getRepos)
               .then((repos) => {
                 repos.forEach((repo) => {
+                  console.log('Looking at repo:', username, repo.name);
                   const getIssues = octokit.issues.listForRepo.endpoint.merge({
                     owner: username,
                     repo: repo.name,
