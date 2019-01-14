@@ -89,7 +89,10 @@ router.post('/', (req, res) => {
                               newUser.issues.unshift(savedIssue);
                             }).catch(err => console.error(err));
                         });
-                        newUser.save().catch(err => console.error(err));
+                        newUser.save().catch((err) => {
+                          console.error(err);
+                          console.error('Could not save user');
+                        });
                       }).catch(err => console.error(err));
                   }).catch(err => console.error(err));
                 });
