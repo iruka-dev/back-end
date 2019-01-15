@@ -23,8 +23,6 @@ router.route('/users');
 router.post('/', (req, res) => {
   // Remove existing data
   mongoose.connection.db.dropDatabase();
-  // Create a stack for saving promises
-  const promiseStack = [];
   // Get request for all stargazers of Ikura repo
   const getStargazers = octokit.activity.listStargazersForRepo.endpoint.merge({
     owner: 'iruka-dev',
@@ -70,7 +68,6 @@ router.post('/', (req, res) => {
             octokit.paginate(getRepos)
               .then((repos) => {
                 repos.forEach((repo) => {
-                  console.log(`Looking at repo: ${username}/${repo.name}`);
                   const getIssues = octokit.issues.listForRepo.endpoint.merge({
                     owner: username,
                     repo: repo.name,
@@ -87,7 +84,6 @@ router.post('/', (req, res) => {
                     octokit.paginate(getIssues)
                       .then((issues) => {
                         issues.forEach((issue) => {
-                          console.log(`Issue: ${issue.title}`);
                           // Take the label names
                           const labels = issue.labels.map(a => a.name);
                           // Create an issue
@@ -99,28 +95,21 @@ router.post('/', (req, res) => {
                           });
 
                           // Store the issue save promise in a list
-                          promiseStack.push(newIssue.save()
+                          newIssue.save()
                             .then((savedIssue) => {
-                              console.log(`user: ${newUser.username}, issues: ${newUser.issues}`);
                               // Insert the saved issue into the issues of the new user
-                              return newUser.issues.unshift(savedIssue);
-                            }).catch(err => console.error(err)));
+                              newUser.issues.unshift(savedIssue);
+                              newUser.save().then(() => {
+                              }).catch((err) => {
+                                console.error(err);
+                                console.error('Could not save user:', newUser);
+                              });
+                            }).catch(err => console.error(err));
                         });
                       }).catch(err => console.error(err));
                   }).catch(err => console.error(err));
                 });
               }).catch(err => console.error(err));
-            // After looking at all repos see that all the promises are resolved
-            Promise.all(promiseStack).then(() => {
-              console.log('Done with promises:', newUser);
-              // Then save the user
-              newUser.save().catch((err) => {
-                console.error(err);
-                console.log('ID:', newUser._id);
-                console.log('issues:', newUser.issues);
-                console.error('Could not save user');
-              });
-            });
           }).catch(err => console.error(err));
       });
       console.log('Refetched user data');
